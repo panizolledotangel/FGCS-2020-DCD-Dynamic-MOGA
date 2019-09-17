@@ -17,17 +17,17 @@ Code necessary to reproduce the experimentation presented in **A Multi-Objective
 
 # Structure
 
-├── data
-├── figures
-├── Section 4.2 - reparation techniques selection.ipynb
-├── sources
-│   ├── experiment
-│   ├── gas
-│   ├── gloaders
-│   ├── mongo_connection
-│   └── reparators
-├── start-notebook.sh
-└── tables
+├── data<br/>
+├── figures<br/>
+├── Section 4.2 - reparation techniques selection.ipynb<br/>
+├── sources<br/>
+│   ├── experiment<br/>
+│   ├── gas<br/>
+│   ├── gloaders<br/>
+│   ├── mongo_connection<br/>
+│   └── reparators<br/>
+├── start-notebook.sh<br/>
+└── tables<br/>
 
 * **data**: contains all the datasets used in the article's experimentation.
 * **figures**: In this folders the figures shown in the article are generated.
