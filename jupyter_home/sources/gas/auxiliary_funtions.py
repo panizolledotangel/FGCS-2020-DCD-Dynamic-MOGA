@@ -21,26 +21,22 @@ def decode(chrom):
     of that position the id of the community where it belongs. To position
     with the same number means that those two nodes belongs to same community.
     """
-    try:
-        size = len(chrom)
-        last_c = 0
-        communities = [float("inf")] * size
-        pending = set(range(size))
-
-        while len(pending) != 0:
-            index = int(pending.pop())
-            neighbour = int(chrom[index])
-
-            if neighbour != -1:
-                communities[index] = min(last_c, communities[index], communities[neighbour])
-                while neighbour in pending:
-                    pending.remove(neighbour)
-                    communities[neighbour] = min(last_c, communities[neighbour])
-                    neighbour = int(chrom[neighbour])
-            last_c += 1
-        return communities
-    except Exception as e:
-        raise e
+    vector = [-1]*len(chromosome)
+    
+    edges = []
+    for i,j in enumerate(chromosome):
+        edges.append((i,j))    
+    
+    g = nx.Graph()
+    g.add_vertices(len(chromosome))
+    g.add_edges(edges)
+    
+    ccs = g.clusters()
+    for c_id, component in enumerate(ccs):
+        for gen in component:
+            vector[gen] = c_id
+        
+    return vector
 
 
 def modularity_individual(individual, graph: igraph.Graph):
