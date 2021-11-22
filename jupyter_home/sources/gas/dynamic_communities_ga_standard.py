@@ -39,7 +39,6 @@ class DynamicCommunitiesGAStandard:
         snp_size = len(self.dataset.snapshots)
         snapshot_members = [None] * snp_size
         snapshot_generations = [None] * snp_size
-        snapshot_whole_population = [None] * snp_size
         snapshot_pareto = [None] * snp_size
 
         generations_taken = [0]*snp_size
@@ -63,22 +62,9 @@ class DynamicCommunitiesGAStandard:
 
             print("working on snapshot {0}...".format(i))
 
-            # Matrix for populations
-            population_size = self.config.get_ga_config().population_size
-            individual_size = len(pop_initial[0])
-            pop_matrix = np.zeros((2, population_size, individual_size), dtype=int)
-
-            # Log initial population
-            for index, ind in enumerate(pop_initial):
-                pop_matrix[0, index, :] = np.array(ind, dtype=int)
-
             # evolve population
             ga = self._make_NSGAII(pop_initial, toolbox, auxf.get_ref_point(g))
-            best_pop, pareto, statistics = ga.start()
-
-            # Log final population
-            for index, ind in enumerate(best_pop):
-                pop_matrix[1, index, :] = np.array(ind, dtype=int)
+            _, pareto, statistics = ga.start()
 
             # save statistics
             snapshot_generations[i] = statistics
@@ -88,9 +74,6 @@ class DynamicCommunitiesGAStandard:
             snapshot_members[i] = auxf.decode(self._select_solution(pareto, g))
             snapshot_pareto[i] = pareto
 
-            # save whole population
-            snapshot_whole_population[i] = pop_matrix
-
             # save population types
             snapshot_population_types.append(ga.population_types)
 
@@ -99,7 +82,7 @@ class DynamicCommunitiesGAStandard:
             "generations_taken": generations_taken,
             "population_types": snapshot_population_types
         }
-        return r_data, snapshot_generations, snapshot_whole_population, snapshot_pareto
+        return r_data, snapshot_generations, snapshot_pareto
 
     def _make_NSGAII(self, pop_initial: List[creator.Individual], toolbox: base.Toolbox, ref_point: Tuple[float, float]) -> NSGAIISkeleton:
 

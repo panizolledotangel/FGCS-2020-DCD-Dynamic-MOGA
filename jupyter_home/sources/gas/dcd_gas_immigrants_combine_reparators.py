@@ -24,7 +24,6 @@ class DCDGasImmigrantsCombineReparators(DynamicCommunitiesGAStandard):
         snp_size = len(self.dataset.snapshots)
         snapshot_members = [None] * snp_size
         snapshot_generations = [None] * snp_size
-        snapshot_whole_population = [None] * snp_size
         snapshot_pareto = [None] * snp_size
 
         immigrants = [None] * snp_size
@@ -68,28 +67,12 @@ class DCDGasImmigrantsCombineReparators(DynamicCommunitiesGAStandard):
                 pop_initial, n_elite, n_random, n_gen_repaired = self._select_immigrants(toolbox, best_pop)
                 ga = self._make_NSGAII(pop_initial, toolbox, auxf.get_ref_point(actual_g))
 
-            # Matrix for populations
-            population_size = self.config.get_ga_config().population_size
-            individual_size = len(pop_initial[0])
-            pop_matrix = np.zeros((2, population_size, individual_size), dtype=int)
-
-            # Log initial population
-            for index, ind in enumerate(pop_initial):
-                pop_matrix[0, index, :] = np.array(ind, dtype=int)
-
             # evolve population
             best_pop, pareto, statistics = ga.start()
-
-            # Log final population
-            for index, ind in enumerate(best_pop):
-                pop_matrix[1, index, :] = np.array(ind, dtype=int)
 
             # save statistics
             snapshot_generations[i] = statistics
             generations_taken[i] = len(statistics)
-
-            # save whole population
-            snapshot_whole_population[i] = pop_matrix
 
             # save immigrants
             immigrants[i] = [n_elite, n_random]
@@ -109,7 +92,7 @@ class DCDGasImmigrantsCombineReparators(DynamicCommunitiesGAStandard):
             "repaired_list": repaired_list,
             "population_types": snapshot_population_types
         }
-        return r_data, snapshot_generations, snapshot_whole_population, snapshot_pareto
+        return r_data, snapshot_generations, snapshot_pareto
 
     def _select_immigrants(self, tbox, past_population):
         num_elite_immigrants = int(math.ceil((1 - self.config.get_rate_random_immigrants()) *

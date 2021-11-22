@@ -21,14 +21,14 @@ def decode(chrom):
     of that position the id of the community where it belongs. To position
     with the same number means that those two nodes belongs to same community.
     """
-    vector = [-1]*len(chromosome)
+    vector = [-1]*len(chrom)
     
     edges = []
-    for i,j in enumerate(chromosome):
+    for i,j in enumerate(chrom):
         edges.append((i,j))    
     
-    g = nx.Graph()
-    g.add_vertices(len(chromosome))
+    g = igraph.Graph()
+    g.add_vertices(len(chrom))
     g.add_edges(edges)
     
     ccs = g.clusters()
@@ -139,7 +139,7 @@ def get_bigger_community(communities_by_nodes: Dict[int, List[int]]) -> List[int
 
 
 def find_equivalences_and_members(new_g: igraph.Graph, old_g: igraph.Graph,
-                                  old_sol: List[int]) -> (Dict[int, int], Dict[int, int], List[int]):
+                                  old_sol: List[int]) -> Tuple[Dict[int, int], Dict[int, int], List[int]]:
     equivalence_old_new = {}
     equivalence_new_old = {}
     members = [-1]*new_g.vcount()
@@ -164,7 +164,7 @@ def random_neighbor(graph: igraph.Graph, vertex_index: int):
     return neighbors[random.randint(0, len(neighbors) - 1)]
 
 
-def average_odf_and_internal_density(graph: igraph.Graph, members: List[int]) -> (float, float):
+def average_odf_and_internal_density(graph: igraph.Graph, members: List[int]) -> Tuple[float, float]:
     """
     Calculates the average odf and the internal density of a solution in one go
     :param graph: graph to calculate the metric to

@@ -57,6 +57,11 @@ def update_datatse(dataset_name: str, loader):
     db.update_one({"_id": dataset_name}, {"$set": loader.get_dataset_info()})
 
 
+def remove_datasets(datasets: List[str]):
+    db = MongoDBConnection.get_datasets_db()
+    db.remove({"_id": {'$in': datasets}})
+
+
 def find_dataset(loader=None) -> pymongo.cursor.Cursor:
     d = {}
     if loader is not None:
@@ -123,6 +128,11 @@ def find_settings(ga_config=None) -> pymongo.cursor.Cursor:
 
     db = MongoDBConnection.get_settings_db()
     return db.find(d)
+
+
+def remove_settings(settings: List[str]):
+    db = MongoDBConnection.get_settings_db()
+    db.remove({'_id': {'$in': settings}})
 
 
 # ITERATIONS

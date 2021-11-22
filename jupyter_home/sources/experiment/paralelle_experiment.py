@@ -17,12 +17,11 @@ def _pool_worker(n_iter, datset_id: str, settings_id: str, dynamic_cooms_ga):
     print("Doing iteration {0}...".format(n_iter))
 
     init_date = datetime.datetime.now()
-    r_data, snapshot_generations, snapshots_whole_population, paretos = dynamic_cooms_ga.find_communities()
+    r_data, snapshot_generations, paretos = dynamic_cooms_ga.find_communities()
     end_date = datetime.datetime.now()
 
     r_data['duration'] = str(end_date - init_date)
-    iteration_id = save_iteration(datset_id, settings_id, snapshot_generations, paretos, r_data)
-    # save_population(iteration_id, snapshots_whole_population)
+    save_iteration(datset_id, settings_id, snapshot_generations, paretos, r_data)
 
     print("done!")
 
