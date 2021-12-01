@@ -9,29 +9,6 @@ from sources.mongo_connection.mongo_connector import MongoDBConnection
 from sources.mongo_connection.mongo_queries import save_iteration
 
 
-def _reinitialize_db_connection():
-    MongoDBConnection.reinitialize()
-
-
-def _pool_worker(n_iter, datset_id: str, settings_id: str, dynamic_cooms_ga):
-    print("Doing iteration {0}...".format(n_iter))
-
-    init_date = datetime.datetime.now()
-    r_data, snapshot_generations, paretos = dynamic_cooms_ga.find_communities()
-    end_date = datetime.datetime.now()
-
-    r_data['duration'] = str(end_date - init_date)
-    save_iteration(datset_id, settings_id, snapshot_generations, paretos, r_data)
-    
-    r_data = None
-    snapshot_generations = None
-    paretos = None
-    dynamic_cooms_ga = None
-    gc.collect()
-
-    print("done!")
-
-
 class ParalelleExperiment:
 
     def __init__(self, datset_id: str, settings_id: str, num_iter: int, dynamic_cooms_ga: DynamicCommunitiesGAStandard,
@@ -45,15 +22,8 @@ class ParalelleExperiment:
 
     def start_experiment(self):
 
-        with ProcessPoolExecutor() as executor:
-            pending = list(range(self.num_iter))
-            jobs = []
-            
-            # add intial jobs
-            i = 0
-            while i < self.number_processes and len(pending) > 0:
-                jobs.append(executor.submit(self._run_iteration, pending.pop()))
-                i += 1
+        with ProcessPoolExecutor(max_workers=self.number_processes) as executor:
+            jobs = [executor.submit(self._run_iteration, i) for i in range(self.num_iter)]
 
             for job in as_completed(jobs):
                 r_data, snapshot_generations, paretos = job.result()
@@ -63,13 +33,8 @@ class ParalelleExperiment:
                 r_data = None
                 snapshot_generations = None
                 paretos = None
-
-                # add new job
-                if len(pending) > 0:
-                    jobs.append(executor.submit(self._run_iteration, pending.pop()))
-
-                # free job
                 del jobs[jobs.index(job)]
+
                 gc.collect()
 
     def _run_iteration(self, n_iter: int):
