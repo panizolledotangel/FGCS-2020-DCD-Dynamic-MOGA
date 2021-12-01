@@ -18,13 +18,14 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-    entrypoint: /bin/bash ./host_data/start-notebook.sh
+      args:
+        - PUID=${USER_ID}
     volumes:
-      - ./jupyter_home:/home/host_data
+      - ./jupyter_home:/home/angel/host_data
     ports:
-      - "8888:8888"
+      - "8885:8888"
     expose:
-      - "8888"
+      - "8885"
     deploy:
       replicas: 1
       restart_policy:
