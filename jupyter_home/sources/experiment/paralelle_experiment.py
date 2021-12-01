@@ -35,7 +35,7 @@ def _pool_worker(n_iter, datset_id: str, settings_id: str, dynamic_cooms_ga):
 class ParalelleExperiment:
 
     def __init__(self, datset_id: str, settings_id: str, num_iter: int, dynamic_cooms_ga: DynamicCommunitiesGAStandard,
-                 n_threads=None):
+                 n_threads=4):
 
         self.datset_id = datset_id
         self.settings_id = settings_id

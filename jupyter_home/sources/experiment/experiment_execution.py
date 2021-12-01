@@ -1,3 +1,4 @@
+import datetime
 import smtplib
 
 import sources.mongo_connection.mongo_queries as db_queries
@@ -7,6 +8,28 @@ from sources.gas.dynamic_communities_ga_immigrants_fixed import DynamicCommuniti
 from sources.gas.dcd_gas_immigrants_combine_reparators import DCDGasImmigrantsCombineReparators
 
 from sources.experiment.paralelle_experiment import ParalelleExperiment
+
+
+def add_single_iteration(dataset_id: str, settings_id: str):
+    dataset = db_queries.get_dataset_obj(dataset_id)
+    config = db_queries.get_settings_obj(settings_id)
+
+    if config.__class__.__name__ == 'DynamicGaConfiguration':
+        dynamic_ga = DynamicCommunitiesGAStandard(dataset, config)
+    elif config.__class__.__name__ == 'DynamicGaImmigrantsConfiguration':
+        dynamic_ga = DynamicCommunitiesGAImmigrantsFixed(dataset, config)
+    elif config.__class__.__name__ == 'DCDGasImmigrantsCombineReparatorsConfig':
+        dynamic_ga = DCDGasImmigrantsCombineReparators(dataset, config)
+
+    print("Doing iteration ...")
+
+    init_date = datetime.datetime.now()
+    r_data, snapshot_generations, paretos = dynamic_ga.find_communities()
+    end_date = datetime.datetime.now()
+
+    r_data['duration'] = str(end_date - init_date)
+
+    db_queries.save_iteration(dataset_id, settings_id, snapshot_generations, paretos, r_data)
 
 
 def add_iterations(dataset_id: str, settings_id: str, n_iterations: int, dynamic_ga: DynamicCommunitiesGAStandard,
