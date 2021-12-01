@@ -58,7 +58,7 @@ class DynamicCommunitiesGAStandard:
 
             # evolve population
             ga = self._make_NSGAII(pop_initial, toolbox, auxf.get_ref_point(g))
-            _, pareto, statistics = ga.start()
+            _, pareto, _ = ga.start()
 
             # save statistics
             snapshot_pareto[i] = pareto
