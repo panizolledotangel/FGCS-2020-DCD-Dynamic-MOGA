@@ -143,9 +143,6 @@ def get_iteration(iteration_id: int) -> Dict:
 
 
 def save_iteration(dataset_id: str, settings_id: str, sp_generations: List[List[float]], paretos, execution_info: Dict):
-
-    max_generations_taken = max(execution_info['generations_taken'])
-
     db = MongoDBConnection.get_paretos_gridfs()
 
     paretos_pickles = [0]*len(paretos)
@@ -157,8 +154,7 @@ def save_iteration(dataset_id: str, settings_id: str, sp_generations: List[List[
 
     db = MongoDBConnection.get_iterations_db()
     result = db.insert_one({"dataset_id": dataset_id, "settings_id": settings_id, "execution_info": execution_info,
-                            "snapshots": sp_generations, "max_generations_taken": max_generations_taken,
-                            "paretos": paretos_pickles, "version": "v2"})
+                            "snapshots": sp_generations, "paretos": paretos_pickles, "version": "v2"})
     return result.inserted_id
 
 
