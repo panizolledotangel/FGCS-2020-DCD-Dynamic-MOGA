@@ -1,4 +1,5 @@
 import random
+import gc
 from typing import List, Tuple
 
 from deap import base
@@ -21,16 +22,6 @@ class NSGAIISkeleton:
         self.population_size = len(population)
         self.ind_size = len(self.population[0])
         self.generations_without_change = 0
-
-        # Variables for logging the types of individuals in the population
-        self.population_types = {
-            "immigrant": [],
-            "immigrant_immigrant": [],
-            "random": [],
-            "random_random": [],
-            "random_immigrant": []
-        }
-
         self.config = config
 
     def start(self):
@@ -52,9 +43,6 @@ class NSGAIISkeleton:
 
         # Begin the generational process
         while not convergence and generation < self.config.number_generations:
-            # log the types of the population
-            self._log_populations_types(pop)
-
             # Vary the population
             offspring = self.toolbox.select(pop, self.config.population_size)
             offspring = [self.toolbox.clone(ind) for ind in offspring]
@@ -93,6 +81,8 @@ class NSGAIISkeleton:
             convergence = self._check_convergence_hv(statistics)
             pareto = pareto_new
             generation += 1
+
+            gc.collect()
 
         return pop, pareto[0], statistics
 
@@ -145,12 +135,3 @@ class NSGAIISkeleton:
             convergence = abs(actual_hypervolume - last_hypervolume) < self.config.threshold_converge
 
         return convergence
-
-    def _log_populations_types(self, population):
-        i, ii, r, rr, ri = count_types(population)
-
-        self.population_types['immigrant'].append(i)
-        self.population_types['immigrant_immigrant'].append(ii)
-        self.population_types['random'].append(r)
-        self.population_types['random_random'].append(rr)
-        self.population_types['random_immigrant'].append(ri)

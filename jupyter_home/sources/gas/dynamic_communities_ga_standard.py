@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 import igraph
+import gc
 import numpy as np
 from deap import base
 
@@ -37,14 +38,7 @@ class DynamicCommunitiesGAStandard:
 
     def find_communities(self):
         snp_size = len(self.dataset.snapshots)
-        snapshot_members = [None] * snp_size
-        snapshot_generations = [None] * snp_size
         snapshot_pareto = [None] * snp_size
-
-        generations_taken = [0]*snp_size
-
-        # population types
-        snapshot_population_types = []
 
         for i in range(snp_size):
             self.config.set_snapshot(i)
@@ -67,22 +61,14 @@ class DynamicCommunitiesGAStandard:
             _, pareto, statistics = ga.start()
 
             # save statistics
-            snapshot_generations[i] = statistics
-            generations_taken[i] = len(statistics)
-
-            # save solution
-            snapshot_members[i] = auxf.decode(self._select_solution(pareto, g))
             snapshot_pareto[i] = pareto
 
-            # save population types
-            snapshot_population_types.append(ga.population_types)
+            # clean memory
+            ga = None
+            gc.collect()
 
-        r_data = {
-            "snapshot_members": snapshot_members,
-            "generations_taken": generations_taken,
-            "population_types": snapshot_population_types
-        }
-        return r_data, snapshot_generations, snapshot_pareto
+        r_data = {}
+        return r_data, [], snapshot_pareto
 
     def _make_NSGAII(self, pop_initial: List[creator.Individual], toolbox: base.Toolbox, ref_point: Tuple[float, float]) -> NSGAIISkeleton:
 

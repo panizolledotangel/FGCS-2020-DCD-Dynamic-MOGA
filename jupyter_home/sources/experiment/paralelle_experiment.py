@@ -1,4 +1,5 @@
 import datetime
+import gc
 
 from multiprocessing import Pool
 from functools import partial
@@ -22,6 +23,12 @@ def _pool_worker(n_iter, datset_id: str, settings_id: str, dynamic_cooms_ga):
 
     r_data['duration'] = str(end_date - init_date)
     save_iteration(datset_id, settings_id, snapshot_generations, paretos, r_data)
+    
+    r_data = None
+    snapshot_generations = None
+    paretos = None
+    dynamic_cooms_ga = None
+    gc.collect()
 
     print("done!")
 

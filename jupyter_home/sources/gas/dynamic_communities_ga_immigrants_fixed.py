@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import gc
 from deap import tools
 
 import sources.gas.auxiliary_funtions as auxf
@@ -22,17 +23,8 @@ class DynamicCommunitiesGAImmigrantsFixed(DynamicCommunitiesGAStandard):
     def find_communities(self):
 
         snp_size = len(self.dataset.snapshots)
-        snapshot_members = [None] * snp_size
-        snapshot_generations = [None] * snp_size
+        snapshot_members = None
         snapshot_pareto = [None] * snp_size
-
-        immigrants = [None] * snp_size
-        repaired_list = [None] * snp_size
-
-        generations_taken = [0]*snp_size
-
-        # population types
-        snapshot_population_types = []
 
         best_pop = None
         for i in range(snp_size):
@@ -43,10 +35,6 @@ class DynamicCommunitiesGAImmigrantsFixed(DynamicCommunitiesGAStandard):
                 actual_g = self.dataset.snapshots[i]
                 # Initialize GA
                 toolbox = self.config.ga_configs.make_toolbox(actual_g)
-
-                n_gen_repaired = [0] * self.config.get_ga_config().population_size
-                n_elite = 0
-                n_random = self.config.get_ga_config().population_size
                 pop_initial = [toolbox.individual(RANDOM) for i in range(self.config.get_ga_config().population_size)]
 
                 # Evaluate the individuals
@@ -58,41 +46,25 @@ class DynamicCommunitiesGAImmigrantsFixed(DynamicCommunitiesGAStandard):
             else:
                 actual_g = self.dataset.snapshots[i]
                 previous_g = self.dataset.snapshots[i-1]
-                previous_sol = snapshot_members[i-1]
+                previous_sol = snapshot_members
 
                 # Initialize GA
                 toolbox = self.config.make_toolbox(actual_snapshot=actual_g, previous_snapshot=previous_g,
                                                    previous_solution=previous_sol)
 
-                pop_initial, n_elite, n_random, n_gen_repaired = self._select_immigrants(toolbox, best_pop)
+                pop_initial, _, _, _ = self._select_immigrants(toolbox, best_pop)
                 ga = self._make_NSGAII(pop_initial, toolbox, auxf.get_ref_point(actual_g))
 
             # evolve population
-            best_pop, pareto, statistics = ga.start()
-
-            # save statistics
-            snapshot_generations[i] = statistics
-            generations_taken[i] = len(statistics)
-
-            # save immigrants
-            immigrants[i] = [n_elite, n_random]
-            repaired_list[i] = n_gen_repaired
+            best_pop, pareto, _ = ga.start()
 
             # save solution
-            snapshot_members[i] = auxf.decode(self._select_solution(pareto, actual_g))
+            snapshot_members = auxf.decode(self._select_solution(pareto, actual_g))
             snapshot_pareto[i] = pareto
+            gc.collect()
 
-            # save population types
-            snapshot_population_types.append(ga.population_types)
-
-        r_data = {
-            "snapshot_members": snapshot_members,
-            "generations_taken": generations_taken,
-            "immigrants": immigrants,
-            "repaired_list": repaired_list,
-            "population_types": snapshot_population_types
-        }
-        return r_data, snapshot_generations, snapshot_pareto
+        r_data = {}
+        return r_data, [], snapshot_pareto
 
     def _select_immigrants(self, tbox, past_population):
         num_elite_immigrants = int(math.ceil((1 - self.config.get_rate_random_immigrants()) *
