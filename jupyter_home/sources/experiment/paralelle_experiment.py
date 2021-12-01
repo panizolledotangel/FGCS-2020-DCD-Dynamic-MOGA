@@ -12,7 +12,7 @@ from sources.mongo_connection.mongo_queries import save_iteration
 class ParalelleExperiment:
 
     def __init__(self, datset_id: str, settings_id: str, num_iter: int, dynamic_cooms_ga: DynamicCommunitiesGAStandard,
-                 n_threads=4):
+                 n_threads=None):
 
         self.datset_id = datset_id
         self.settings_id = settings_id
@@ -22,7 +22,7 @@ class ParalelleExperiment:
 
     def start_experiment(self):
 
-        with ProcessPoolExecutor() as executor:
+        with ProcessPoolExecutor(max_workers=self.number_processes) as executor:
             jobs = [executor.submit(self._run_iteration, i) for i in range(self.num_iter)]
 
             for job in as_completed(jobs):
