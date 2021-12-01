@@ -76,13 +76,12 @@ class LoaderInterface:
 
     def store_or_update_db(self, dataset_name: str):
         if db_queries.get_dataset(dataset_name) is None:
-            with db_queries.find_dataset(self) as cursor:
-                if cursor.count() == 0:
-                    db_queries.save_dataset(dataset_name, self)
-                else:
-                    ids = [c['_id'] for c in cursor]
-                    warnings.warn("Petition ignored already exists a dataset document in the db with same parameters, "
-                                  "dataset name(s) is {0}".format(ids))
+            if db_queries.count_dataset(self) == 0:
+                db_queries.save_dataset(dataset_name, self)
+            else:
+                ids = [c['_id'] for c in cursor]
+                warnings.warn("Petition ignored already exists a dataset document in the db with same parameters, "
+                              "dataset name(s) is {0}".format(ids))
         else:
             db_queries.update_datatse(dataset_name, self)
 

@@ -38,13 +38,12 @@ class DynamicGaConfiguration:
 
     def store_or_update_db(self, settings_name: str):
         if db_queries.get_settings(settings_name) is None:
-            with db_queries.find_settings(self) as cursor:
-                if cursor.count() == 0:
-                    db_queries.save_settings(settings_name, self)
-                else:
-                    ids = [c['_id'] for c in cursor]
-                    warnings.warn("Petition ignored already exists a settings document in the db with same parameters, "
-                                  "settings name(s) are {0}".format(ids))
+            if db_queries.count_settings(self) == 0:
+                db_queries.save_settings(settings_name, self)
+            else:
+                ids = [c['_id'] for c in cursor]
+                warnings.warn("Petition ignored already exists a settings document in the db with same parameters, "
+                              "settings name(s) are {0}".format(ids))
         else:
             db_queries.update_settings(settings_name, self)
 
