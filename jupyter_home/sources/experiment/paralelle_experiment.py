@@ -1,13 +1,12 @@
 import datetime
 import gc
 
-from multiprocessing import Pool
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import partial
 
 from sources.gas.dynamic_communities_ga_standard import DynamicCommunitiesGAStandard
 from sources.mongo_connection.mongo_connector import MongoDBConnection
 from sources.mongo_connection.mongo_queries import save_iteration
-from sources.mongo_connection.mongo_queries import save_population
 
 
 def _reinitialize_db_connection():
@@ -45,12 +44,41 @@ class ParalelleExperiment:
         self.number_processes = n_threads
 
     def start_experiment(self):
-        iterations_params = [x for x in range(self.num_iter)]
 
-        part_worker = partial(_pool_worker,
-                              datset_id=self.datset_id,
-                              settings_id=self.settings_id,
-                              dynamic_cooms_ga=self.dynamic_cooms_ga)
+        with ProcessPoolExecutor() as executor:
+            pending = list(range(self.num_iter))
+            jobs = []
+            
+            # add intial jobs
+            i = 0
+            while i < self.number_processes and len(pending) > 0:
+                jobs.append(executor.submit(self._run_iteration, pending.pop()))
+                i += 1
 
-        with Pool(processes=self.number_processes, initializer=_reinitialize_db_connection) as pool:
-            pool.map(part_worker, iterations_params)
+            for job in as_completed(jobs):
+                r_data, snapshot_generations, paretos = job.result()
+                save_iteration(self.datset_id, self.settings_id, snapshot_generations, paretos, r_data)
+
+                # free local resources
+                r_data = None
+                snapshot_generations = None
+                paretos = None
+
+                # add new job
+                if len(pending) > 0:
+                    jobs.append(executor.submit(self._run_iteration, pending.pop()))
+
+                # free job
+                del jobs[jobs.index(job)]
+                gc.collect()
+
+    def _run_iteration(self, n_iter: int):
+        print("Doing iteration {0}...".format(n_iter))
+
+        init_date = datetime.datetime.now()
+        r_data, snapshot_generations, paretos = self.dynamic_cooms_ga.find_communities()
+        end_date = datetime.datetime.now()
+
+        r_data['duration'] = str(end_date - init_date)
+        return r_data, snapshot_generations, paretos
+
