@@ -72,6 +72,16 @@ def find_dataset(loader=None) -> pymongo.cursor.Cursor:
     return db.find(d)
 
 
+def count_dataset(loader=None) -> int:
+    d = {}
+    if loader is not None:
+        d['module'] = str(loader.__module__) + "." + str(loader.__class__.__name__)
+        d.update(loader.get_dataset_info())
+
+    db = MongoDBConnection.get_datasets_db()
+    return db.count_documents(d)
+
+
 # SETTINGS
 def get_settings(settings_name: str) -> Dict:
     db = MongoDBConnection.get_settings_db()
@@ -130,6 +140,17 @@ def find_settings(ga_config=None) -> pymongo.cursor.Cursor:
     return db.find(d)
 
 
+def count_settings(ga_config=None) -> int:
+    d = {}
+
+    if ga_config is not None:
+        d['module'] = str(ga_config.__module__) + "." + str(ga_config.__class__.__name__)
+        d.update(ga_config.make_dict())
+
+    db = MongoDBConnection.get_settings_db()
+    return db.count_documents(d)
+
+
 def remove_settings(settings: List[str]):
     db = MongoDBConnection.get_settings_db()
     db.remove({'_id': {'$in': settings}})
@@ -169,7 +190,7 @@ def find_iteration(dataset_id: str, settings_id: str) -> pymongo.cursor.Cursor:
 
 def count_iterations(dataset_id: str, settings_id: str) -> int:
     db = MongoDBConnection.get_iterations_db()
-    return db.count({'dataset_id': dataset_id, 'settings_id': settings_id})
+    return db.count_documents({'dataset_id': dataset_id, 'settings_id': settings_id})
 
 
 def get_distinct_id_iterations(dataset_id: str, settings_id: str) -> List[str]:
