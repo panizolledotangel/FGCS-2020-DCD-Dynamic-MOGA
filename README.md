@@ -7,13 +7,15 @@ Code necessary to reproduce the experimentation presented in **A Multi-Objective
 
 # Getting started
 
-1. Open a terminal the **root folder** of the proyect and run **docker-compose run -d**.
-2. Chek that both containers, **db** and **notebook**, are running using **docker-compose ps**.
-3. Open a browser and go to **localhost:8888**
-4. A login page will ask you for a token. back on the terminal run **docker-compose logs notebook | grep token**.
-5. Copy the token (token=XXXXXX...) from the terminal and use it to login at the browser.
-6. Use the jupyter notebook inside **host_data** to reproduce the experiment.
-7. Outputs will be generate inside **tables** and **figures** folders.
+1. Open a terminal on the **root folder** of the proyect.
+2. Run **export USER_ID=`id -u`**.
+3. Run **docker-compose run -d**.
+4. Chek that both containers, **db** and **notebook**, are running using **docker-compose ps**.
+5. Open a browser and go to **localhost:8888**
+6. A login page will ask you for a token. back on the terminal run **docker-compose logs notebook | grep token**.
+7. Copy the token (token=XXXXXX...) from the terminal and use it to login at the browser.
+8. Use the jupyter notebook inside **host_data** to reproduce the experiment.
+9. Outputs will be generate inside **tables** and **figures** folders.
 
 # Structure
 
