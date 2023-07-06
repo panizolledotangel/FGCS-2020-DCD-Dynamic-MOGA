@@ -16,7 +16,7 @@ python-igraph==0.7.1.post6
 pytimeparse==1.1.8
 pytz==2019.1
 scikit-learn==0.20.3
-scipy==1.2.1
+scipy==1.10.0
 seaborn==0.9.0
 six==1.12.0
 sklearn==0.0
